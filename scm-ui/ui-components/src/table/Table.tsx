@@ -64,7 +64,7 @@ const Table: FC<Props> = ({ data, sortable, children, emptyMessage }) => {
     return (
       <tr key={rowIndex}>
         {React.Children.map(children, (child, columnIndex) => {
-          return <td>{React.cloneElement(child, { ...child.props, columnIndex, row })}</td>;
+          return <td className={child.props.className}>{React.cloneElement(child, { ...child.props, columnIndex, row })}</td>;
         })}
       </tr>
     );

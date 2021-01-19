@@ -26,6 +26,13 @@ import { storiesOf } from "@storybook/react";
 import Table from "./Table";
 import Column from "./Column";
 import TextColumn from "./TextColumn";
+import styled from "styled-components";
+
+const StyledTextColumn = styled(TextColumn).attrs(() => ({
+  className: "has-text-primary"
+}))`
+  color: purple;
+`;
 
 storiesOf("Table|Table", module)
   .add("Default", () => (
@@ -66,6 +73,17 @@ storiesOf("Table|Table", module)
       <TextColumn header="Id" dataKey="id" />
       <TextColumn header="Name" dataKey="title" />
       <TextColumn header="Description" dataKey="desc" />
+    </Table>
+  ))
+  .add("With styling", () => (
+    <Table
+      data={[
+        { id: "21", title: "Pommes", desc: "Fried potato sticks" },
+        { id: "42", title: "Quarter-Pounder", desc: "Big burger" },
+      ]}
+    >
+      <StyledTextColumn className="jhk" header="Id" dataKey="id" />
+      <StyledTextColumn header="Name" dataKey="title" />
     </Table>
   ))
   .add("Empty", () => (
