@@ -26,6 +26,9 @@ package sonia.scm.importexport;
 
 import org.apache.shiro.SecurityUtils;
 import sonia.scm.NotFoundException;
+import sonia.scm.notifications.Notification;
+import sonia.scm.notifications.NotificationSender;
+import sonia.scm.notifications.Type;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryPermissions;
 import sonia.scm.repository.api.ExportFailedException;
@@ -55,12 +58,14 @@ public class ExportService {
   private final BlobStoreFactory blobStoreFactory;
   private final DataStoreFactory dataStoreFactory;
   private final ExportFileExtensionResolver fileExtensionResolver;
+  private final NotificationSender notificationSender;
 
   @Inject
-  public ExportService(BlobStoreFactory blobStoreFactory, DataStoreFactory dataStoreFactory, ExportFileExtensionResolver fileExtensionResolver) {
+  public ExportService(BlobStoreFactory blobStoreFactory, DataStoreFactory dataStoreFactory, ExportFileExtensionResolver fileExtensionResolver, NotificationSender notificationSender) {
     this.blobStoreFactory = blobStoreFactory;
     this.dataStoreFactory = dataStoreFactory;
     this.fileExtensionResolver = fileExtensionResolver;
+    this.notificationSender = notificationSender;
   }
 
   public OutputStream store(Repository repository, boolean withMetadata, boolean compressed, boolean encrypted) {
@@ -120,6 +125,7 @@ public class ExportService {
     RepositoryExportInformation info = dataStore.get(repository.getId());
     info.setStatus(ExportStatus.FINISHED);
     dataStore.put(repository.getId(), info);
+    notificationSender.send(new Notification(Type.INFO, "/repo/" + repository.getNamespaceAndName(), "exportFinished"));
   }
 
   public boolean isExporting(Repository repository) {

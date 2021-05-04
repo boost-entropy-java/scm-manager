@@ -36,6 +36,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.NotFoundException;
+import sonia.scm.notifications.NotificationSender;
+import sonia.scm.notifications.Type;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryTestData;
 import sonia.scm.store.Blob;
@@ -55,9 +57,11 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static sonia.scm.importexport.ExportService.STORE_NAME;
 
@@ -74,6 +78,9 @@ class ExportServiceTest {
 
   @Mock
   private ExportFileExtensionResolver resolver;
+
+  @Mock
+  private NotificationSender notificationSender;
 
   private BlobStore blobStore;
   private DataStore<RepositoryExportInformation> dataStore;
@@ -136,6 +143,12 @@ class ExportServiceTest {
 
     exportService.setExportFinished(REPOSITORY);
     assertThat(exportService.isExporting(REPOSITORY)).isFalse();
+    verify(notificationSender).send(argThat(notification -> {
+      assertThat(notification.getLink()).isEqualTo("/repo/hitchhiker/HeartOfGold");
+      assertThat(notification.getType()).isEqualTo(Type.INFO);
+      assertThat(notification.getMessage()).isEqualTo("exportFinished");
+     return true;
+    }));
   }
 
   @Test

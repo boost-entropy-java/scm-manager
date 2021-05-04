@@ -424,5 +424,8 @@
     "CustomNamespaceStrategy": "Benutzerdefiniert",
     "CurrentYearNamespaceStrategy": "Aktuelles Jahr",
     "RepositoryTypeNamespaceStrategy": "Repository Typ"
+  },
+  "notifications": {
+    "exportFinished": "Der Repository Export wurde abgeschlossen."
   }
 }
