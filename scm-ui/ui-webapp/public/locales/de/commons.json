@@ -97,15 +97,12 @@
     "error": "Fehler",
     "error-message": "'me' ist nicht definiert",
     "theme": {
-      "nav": {
-        "label": "Design",
-        "title": "Wähle dein Design"
-      },
-      "subtitle": "Wähle dein Design",
+      "navLink": "Design",
+      "subtitle": "Design wählen",
       "submit": "Anwenden",
       "light": {
         "displayName": "Hell",
-        "description": "„Hell“ is das Standard-Design des SCM-Managers"
+        "description": "„Hell“ ist das Standard-Design des SCM-Managers"
       },
       "highcontrast": {
         "displayName": "Hoher Kontrast",
@@ -135,7 +132,8 @@
   },
   "footer": {
     "user": {
-      "profile": "Profil"
+      "profile": "Profil",
+      "theme": "Design"
     },
     "information": {
       "title": "Information"
