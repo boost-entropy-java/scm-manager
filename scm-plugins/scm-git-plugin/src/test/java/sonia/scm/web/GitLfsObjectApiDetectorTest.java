@@ -22,16 +22,42 @@
  * SOFTWARE.
  */
 
-import React, { FC } from "react";
-import { Notification, Page } from "@scm-manager/ui-components";
-import { useTranslation } from "react-i18next";
+package sonia.scm.web;
 
-const NotFoundPage: FC = () => {
-  const [t] = useTranslation("commons");
-  return (
-    <Page>
-      <Notification type="danger">404: {t("pageNotFound")}</Notification>
-    </Page>
-  );
-};
-export default NotFoundPage;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import javax.servlet.http.HttpServletRequest;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+@ExtendWith(MockitoExtension.class)
+class GitLfsObjectApiDetectorTest {
+
+  @Mock
+  private HttpServletRequest request;
+
+  @Test
+  void shouldAcceptObjectRequest() {
+    when(request.getRequestURI())
+      .thenReturn("/scm/repo/scmadmin/lfs.git/info/lfs/objects/abc123");
+
+    boolean result = new GitLfsObjectApiDetector().isScmClient(request, null);
+
+    assertThat(result).isTrue();
+  }
+
+  @Test
+  void shouldRejectFakeObjectRequest() {
+    when(request.getRequestURI())
+      .thenReturn("/scm/repo/scmadmin/lfs.git/code/info/lfs/objects/abc123");
+
+    boolean result = new GitLfsObjectApiDetector().isScmClient(request, null);
+
+    assertThat(result).isFalse();
+  }
+}
