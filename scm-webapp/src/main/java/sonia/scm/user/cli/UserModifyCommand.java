@@ -25,11 +25,13 @@
 package sonia.scm.user.cli;
 
 import com.google.common.annotations.VisibleForTesting;
+import org.apache.shiro.authc.credential.PasswordService;
 import picocli.CommandLine;
 import sonia.scm.cli.CommandValidator;
 import sonia.scm.cli.ParentCommand;
 import sonia.scm.user.User;
 import sonia.scm.user.UserManager;
+import sonia.scm.util.ValidationUtil;
 
 import javax.inject.Inject;
 import javax.validation.constraints.Email;
@@ -43,6 +45,7 @@ class UserModifyCommand implements Runnable {
   @CommandLine.Mixin
   private final CommandValidator validator;
   private final UserManager manager;
+  private final PasswordService passwordService;
 
   @CommandLine.Parameters(index = "0", paramLabel = "<username>", descriptionKey = "scm.user.username")
   private String username;
@@ -58,15 +61,19 @@ class UserModifyCommand implements Runnable {
   private String password;
 
   @Inject
-  UserModifyCommand(UserTemplateRenderer templateRenderer, CommandValidator validator, UserManager manager) {
+  UserModifyCommand(UserTemplateRenderer templateRenderer, CommandValidator validator, UserManager manager, PasswordService passwordService) {
     this.templateRenderer = templateRenderer;
     this.validator = validator;
     this.manager = manager;
+    this.passwordService = passwordService;
   }
 
   @Override
   public void run() {
     validator.validate();
+    if (password != null && !ValidationUtil.isPasswordValid(password)) {
+      templateRenderer.renderPasswordError();
+    }
 
     User user = manager.get(username);
 
@@ -77,8 +84,8 @@ class UserModifyCommand implements Runnable {
       if (email != null) {
         user.setMail(email);
       }
-      if (password != null) {
-        user.setPassword(password);
+      if (!user.isExternal() && password != null) {
+        user.setPassword(passwordService.encryptPassword(password));
       }
       manager.modify(user);
       templateRenderer.render(user);

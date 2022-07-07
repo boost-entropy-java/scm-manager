@@ -24,6 +24,7 @@
 
 package sonia.scm.user.cli;
 
+import org.apache.shiro.authc.credential.PasswordService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -40,6 +41,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -53,16 +55,20 @@ class UserCreateCommandTest {
   private CommandValidator validator;
   @Mock
   private UserManager manager;
+  @Mock
+  private PasswordService passwordService;
 
   private UserCreateCommand command;
 
   @BeforeEach
   void initCommand() {
-    command = new UserCreateCommand(testRenderer.getTemplateRenderer(), validator, manager);
+    command = new UserCreateCommand(testRenderer.getTemplateRenderer(), validator, manager, passwordService);
   }
 
   @Nested
   class ForSuccessfulCreationTest {
+    private static final String PASSWORD = "patrician";
+    private static final String ENC_PASSWORD = "enc_patrician";
 
     @BeforeEach
     void mockCreation() {
@@ -76,6 +82,7 @@ class UserCreateCommandTest {
       command.setUsername("havelock");
       command.setDisplayName("Havelock Vetinari");
       command.setEmail("havelock.vetinari@discworld");
+      lenient().when(passwordService.encryptPassword(PASSWORD)).thenReturn(ENC_PASSWORD);
     }
 
     @Test
@@ -88,7 +95,7 @@ class UserCreateCommandTest {
         assertThat(argument.getName()).isEqualTo("havelock");
         assertThat(argument.getDisplayName()).isEqualTo("Havelock Vetinari");
         assertThat(argument.isExternal()).isFalse();
-        assertThat(argument.getPassword()).isEqualTo("patrician");
+        assertThat(argument.getPassword()).isEqualTo(ENC_PASSWORD);
         assertThat(argument.getMail()).isEqualTo("havelock.vetinari@discworld");
         assertThat(argument.isActive()).isTrue();
         return true;
@@ -114,7 +121,7 @@ class UserCreateCommandTest {
 
     @Test
     void shouldCreateInactiveUser() {
-      command.setPassword("patrician");
+      command.setPassword(PASSWORD);
       command.setInactive(true);
 
       command.run();
@@ -123,7 +130,7 @@ class UserCreateCommandTest {
         assertThat(argument.getName()).isEqualTo("havelock");
         assertThat(argument.getDisplayName()).isEqualTo("Havelock Vetinari");
         assertThat(argument.isExternal()).isFalse();
-        assertThat(argument.getPassword()).isEqualTo("patrician");
+        assertThat(argument.getPassword()).isEqualTo(ENC_PASSWORD);
         assertThat(argument.getMail()).isEqualTo("havelock.vetinari@discworld");
         assertThat(argument.isActive()).isFalse();
         return true;
@@ -133,7 +140,7 @@ class UserCreateCommandTest {
     @Test
     void shouldPrintUserAfterCreationInEnglish() {
       testRenderer.setLocale("en");
-      command.setPassword("patrician");
+      command.setPassword(PASSWORD);
 
       command.run();
 
@@ -153,7 +160,7 @@ class UserCreateCommandTest {
     @Test
     void shouldPrintUserAfterCreationInGerman() {
       testRenderer.setLocale("de");
-      command.setPassword("patrician");
+      command.setPassword(PASSWORD);
 
       command.run();
 
@@ -168,6 +175,23 @@ class UserCreateCommandTest {
           "Zuletzt bearbeitet:"
         );
       assertThat(testRenderer.getStdErr()).isEmpty();
+    }
+
+    @Test
+    void shouldEncryptPassword() {
+      command.setPassword(PASSWORD);
+
+      command.run();
+
+      verify(manager).create(argThat(argument -> {
+        assertThat(argument.getName()).isEqualTo("havelock");
+        assertThat(argument.getDisplayName()).isEqualTo("Havelock Vetinari");
+        assertThat(argument.isExternal()).isFalse();
+        assertThat(argument.getPassword()).isEqualTo(ENC_PASSWORD);
+        assertThat(argument.getMail()).isEqualTo("havelock.vetinari@discworld");
+        assertThat(argument.isActive()).isTrue();
+        return true;
+      }));
     }
   }
 
@@ -194,7 +218,7 @@ class UserCreateCommandTest {
 
       verifyNoInteractions(manager);
       assertThat(testRenderer.getStdOut()).isEmpty();
-      assertThat(testRenderer.getStdErr()).contains("Password is required for internal users");
+      assertThat(testRenderer.getStdErr()).contains("Valid password is required for internal users");
     }
 
     @Test
@@ -205,12 +229,13 @@ class UserCreateCommandTest {
 
       verifyNoInteractions(manager);
       assertThat(testRenderer.getStdOut()).isEmpty();
-      assertThat(testRenderer.getStdErr()).contains("Für interne Benutzer muss ein Passwort gesetzt werden");
+      assertThat(testRenderer.getStdErr()).contains("Für interne Benutzer muss ein gültiges Passwort gesetzt werden");
     }
 
     @Test
     void shouldFailWithEnglishMsgIfExternalUserAndInactive() {
       testRenderer.setLocale("en");
+      command.setPassword("123456");
       command.setExternal(true);
       command.setInactive(true);
 
@@ -224,6 +249,7 @@ class UserCreateCommandTest {
     @Test
     void shouldFailWithGermanMsgIfExternalUserWithInactive() {
       testRenderer.setLocale("de");
+      command.setPassword("123456");
       command.setExternal(true);
       command.setInactive(true);
 
