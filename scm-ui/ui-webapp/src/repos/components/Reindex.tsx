@@ -22,74 +22,43 @@
  * SOFTWARE.
  */
 
-package sonia.scm.repository.api;
+import { Repository } from "@scm-manager/ui-types";
+import React, { FC } from "react";
+import { useReindexRepository } from "@scm-manager/ui-api";
+import { Button, ErrorNotification, Level, Notification, Subtitle } from "@scm-manager/ui-components";
+import { useTranslation } from "react-i18next";
 
-/**
- * Enumeration of available commands.
- *
- * @author Sebastian Sdorra
- * @since 1.17
- */
-public enum Command
-{
-  LOG, BROWSE, CAT, DIFF, BLAME,
+type Props = {
+  repository: Repository;
+};
 
-  /**
-   * @since 1.18
-   */
-  TAGS,
+const Reindex: FC<Props> = ({ repository }) => {
+  const [t] = useTranslation("repos");
+  const { reindex, error, isLoading, isRunning } = useReindexRepository();
 
-  /**
-   * @since 1.18
-   */
-  BRANCHES,
+  return (
+    <>
+      <hr />
+      <ErrorNotification error={error} />
+      {isRunning ? <Notification type="success">{t("reindex.started")}</Notification> : null}
+      <Subtitle>{t("reindex.subtitle")}</Subtitle>
+      <p>{t("reindex.description")}</p>
+      <Level
+        right={
+          <Button
+            color="warning"
+            icon="sync-alt"
+            className="mt-4"
+            action={() => reindex(repository)}
+            disabled={isLoading}
+            loading={isLoading}
+          >
+            {t("reindex.button")}
+          </Button>
+        }
+      />
+    </>
+  );
+};
 
-  /**
-   * @since 1.31
-   */
-  INCOMING, OUTGOING, PUSH, PULL,
-
-  /**
-   * @since 1.43
-   */
-  BUNDLE, UNBUNDLE,
-
-  /**
-   * @since 2.0
-   */
-  MODIFICATIONS, MERGE, DIFF_RESULT, BRANCH, MODIFY,
-
-  /**
-   * @since 2.10.0
-   */
-  LOOKUP,
-
-  /**
-   * @since 2.11.0
-   */
-  TAG,
-
-  /**
-   * @since 2.17.0
-   */
-  FULL_HEALTH_CHECK,
-
-  /**
-   * @since 2.19.0
-   */
-  MIRROR,
-
-  /**
-   * @since 2.26.0
-   */
-  FILE_LOCK,
-
-  /**
-   * @since 2.28.0
-   */
-  BRANCH_DETAILS,
-  /**
-   * @since 2.39.0
-   */
-  CHANGESETS
-}
+export default Reindex;
