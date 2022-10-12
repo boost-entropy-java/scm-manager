@@ -21,35 +21,33 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React, { FC } from "react";
-import Logo from "./../Logo";
 
-type Props = {
-  authenticated?: boolean;
+import React, { FC, useContext, useMemo, useRef } from "react";
+
+export type ShortcutDocsContextType = {
+  docs: Readonly<Record<string, string>>;
+  add: (key: string, description: string) => void;
+  remove: (key: string) => void;
 };
 
-const LargeHeader: FC = () => {
-  return (
-    <div className="hero has-scm-background is-small">
-      <div className="hero-body">
-        <div className="container">
-          <div className="columns is-vcentered">
-            <div className="column">
-              <Logo />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+const ShortcutDocsContext = React.createContext<ShortcutDocsContextType>({} as ShortcutDocsContextType);
+
+export const ShortcutDocsContextProvider: FC = ({ children }) => {
+  const docs = useRef<Record<string, string>>({});
+  const value = useMemo(
+    () => ({
+      docs: docs.current,
+      add: (key: string, description: string) => (docs.current[key] = description),
+      remove: (key: string) => {
+        delete docs.current[key];
+      },
+    }),
+    []
   );
+
+  return <ShortcutDocsContext.Provider value={value}>{children}</ShortcutDocsContext.Provider>;
 };
 
-const Header: FC<Props> = ({ authenticated, children }) => {
-  if (authenticated) {
-    return <>{children}</>;
-  } else {
-    return <LargeHeader />;
-  }
-};
-
-export default Header;
+export default function useShortcutDocs() {
+  return useContext(ShortcutDocsContext);
+}

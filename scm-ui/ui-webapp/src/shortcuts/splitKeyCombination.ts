@@ -21,35 +21,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React, { FC } from "react";
-import Logo from "./../Logo";
 
-type Props = {
-  authenticated?: boolean;
-};
+import parser from "ua-parser-js";
 
-const LargeHeader: FC = () => {
-  return (
-    <div className="hero has-scm-background is-small">
-      <div className="hero-body">
-        <div className="container">
-          <div className="columns is-vcentered">
-            <div className="column">
-              <Logo />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const Header: FC<Props> = ({ authenticated, children }) => {
-  if (authenticated) {
-    return <>{children}</>;
-  } else {
-    return <LargeHeader />;
-  }
-};
-
-export default Header;
+export default function splitKeyCombination(key: string, userAgent = window.navigator.userAgent) {
+  const {
+    os: { name: osName },
+  } = parser(userAgent);
+  const isMacOS = osName === "Mac OS";
+  return key
+    .replace(/(option|alt)/g, isMacOS ? "option" : "alt")
+    .replace(/(command|meta)/g, isMacOS ? "⌘" : "meta")
+    .replace("mod", isMacOS ? "⌘" : "ctrl")
+    .split(/[+ ]/);
+}
