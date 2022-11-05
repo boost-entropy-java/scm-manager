@@ -27,6 +27,7 @@ package sonia.scm.plugin;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.util.Collections;
 import java.util.Set;
 
 @AllArgsConstructor
@@ -34,4 +35,18 @@ import java.util.Set;
 class PluginCenterResult {
   private Set<AvailablePlugin> plugins;
   private Set<PluginSet> pluginSets;
+  private PluginCenterStatus status;
+
+  public PluginCenterResult() {
+    this(Collections.emptySet(), Collections.emptySet(), PluginCenterStatus.OK);
+  }
+
+  public PluginCenterResult(PluginCenterStatus status) {
+    this(Collections.emptySet(), Collections.emptySet(), status);
+  }
+
+  public PluginCenterResult(Set<AvailablePlugin> plugins, Set<PluginSet> pluginSets) {
+    this(plugins, pluginSets, PluginCenterStatus.OK);
+  }
+
 }

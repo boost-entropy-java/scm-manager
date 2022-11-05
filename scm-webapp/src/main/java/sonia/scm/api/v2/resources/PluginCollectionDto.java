@@ -22,7 +22,23 @@
  * SOFTWARE.
  */
 
-export { default as useShortcut } from "./useShortcut";
-export { default as useShortcutDocs, ShortcutDocsContextProvider } from "./useShortcutDocs";
-export { default as usePauseShortcuts } from "./usePauseShortcuts";
-export { useKeyboardIteratorTarget, KeyboardIterator } from "./iterator/keyboardIterator";
+package sonia.scm.api.v2.resources;
+
+import de.otto.edison.hal.Embedded;
+import de.otto.edison.hal.HalRepresentation;
+import de.otto.edison.hal.Links;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import sonia.scm.plugin.PluginCenterStatus;
+
+@Getter
+@NoArgsConstructor
+public class PluginCollectionDto extends HalRepresentation {
+
+  private PluginCenterStatus pluginCenterStatus;
+
+  public PluginCollectionDto(Links links, Embedded embedded, PluginCenterStatus pluginCenterStatus) {
+    super(links, embedded);
+    this.pluginCenterStatus = pluginCenterStatus;
+  }
+}
