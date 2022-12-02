@@ -116,7 +116,7 @@ pipeline {
         expression { return isBuildSuccess() }
       }
       steps {
-        withPublishEnivronment {
+        withPublishEnvironment {
           gradle "-PenablePackaging publish"
         }
       }
@@ -286,7 +286,7 @@ void withCheckEnvironment(Closure<Void> closure) {
   closure.call()
 }
 
-void withPublishEnivronment(Closure<Void> closure) {
+void withPublishEnvironment(Closure<Void> closure) {
   withCredentials([
     usernamePassword(credentialsId: 'packages-scm-manager-org', usernameVariable: 'ORG_GRADLE_PROJECT_packagesScmManagerUsername', passwordVariable: 'ORG_GRADLE_PROJECT_packagesScmManagerPassword'),
     usernamePassword(credentialsId: 'cesmarvin', usernameVariable: 'ORG_GRADLE_PROJECT_gitHubUsername', passwordVariable: 'ORG_GRADLE_PROJECT_gitHubApiToken'),
